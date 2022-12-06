@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ILGPU" Version="1.3.0" />
+    <PackageReference Include="ILGPU.Algorithms" Version="1.3.0" />
+    <PackageReference Include="SimulationFramework" Version="0.1.4" />
+    <PackageReference Include="SimulationFramework.Desktop" Version="0.1.4" />
+  </ItemGroup>
+
+</Project>
