@@ -52,7 +52,9 @@ public unsafe struct Scene
             int closestMaterial = 0;
             for (int i = 0; i < instances.Length; i++)
             {
-                if (HitModel(instances[i].model, ray, out var normal, out var t))
+                Ray transformedRay = ray.Transform(instances[i].rayTransform);
+
+                if (HitModel(instances[i].model, transformedRay, out var normal, out var t))
                 {
                     if (t < closestT)
                     {
@@ -73,7 +75,7 @@ public unsafe struct Scene
                 }
                 else
                 {
-                    return color;
+                    return color * attenution;
                 } 
             }
             else
@@ -95,7 +97,9 @@ public unsafe struct Scene
         switch (GetModelKind(modelIndex))
         {
             case ModelKind.Sphere:
-                return HitModel<Sphere>(modelIndex, ray, out normal, out t);
+                return HitModel<SphereModel>(modelIndex, ray, out normal, out t);
+            case ModelKind.Cube:
+                return HitModel<CubeModel>(modelIndex, ray, out normal, out t);
             default:
                 t = 0;
                 normal = Vector3.Zero;
@@ -117,6 +121,12 @@ public unsafe struct Scene
                 return ScatterMaterial<ReflectiveMaterial>(materialIndex, ray, normal, t, out attenuation, out direction);
             case MaterialKind.Diffuse:
                 return ScatterMaterial<DiffuseMaterial>(materialIndex, ray, normal, t, out attenuation, out direction);
+            case MaterialKind.Glass:
+                return ScatterMaterial<GlassMaterial>(materialIndex, ray, normal, t, out attenuation, out direction);
+            case MaterialKind.Normal:
+                return ScatterMaterial<NormalMaterial>(materialIndex, ray, normal, t, out attenuation, out direction);
+            case MaterialKind.Metal:
+                return ScatterMaterial<MetalMaterial>(materialIndex, ray, normal, t, out attenuation, out direction);
             default:
                 attenuation = direction = Vector3.Zero;
                 return false;

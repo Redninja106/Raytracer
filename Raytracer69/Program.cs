@@ -11,7 +11,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 
 ITexture? texture = null;
-float width = 500, height = 500;
+float scale = 1.0f;
 int resolutionX = 500, resolutionY = 500;
 bool locked = true;
 Scene scene = new();
@@ -33,18 +33,26 @@ CudaAccelerator? accelerator = null;
 MemoryBuffer2D<Color, Stride2D.DenseX>? buffer = null;
 Action<AcceleratorStream, Index2D, ArrayView<Color>, Kernel>? compiledKernel = null;
 
-instances.Add(new(0, 0));
-instances.Add(new(1, 3));
-instances.Add(new(2, 1));
-instances.Add(new(3, 2));
-models.AddElement(ModelKind.Sphere, new Sphere(new(0, 0, 2), 1));
-models.AddElement(ModelKind.Sphere, new Sphere(new(1f, .5f, .5f), .5f));
-models.AddElement(ModelKind.Sphere, new Sphere(new(-2f, .5f, 2), .5f));
-models.AddElement(ModelKind.Sphere, new Sphere(new(0, 2001, 0), 2000));
+instances.Add(new(0, 0, Matrix4x4.CreateTranslation(new(0, 0, 2))));
+instances.Add(new(1, 3, Matrix4x4.CreateTranslation(new(1f, .5f, .5f))));
+instances.Add(new(2, 1, Matrix4x4.CreateTranslation(new(-2f, .5f, 2))));
+instances.Add(new(3, 2, Matrix4x4.CreateTranslation(new(0, 2001, 0))));
+instances.Add(new(0, 6, Matrix4x4.CreateTranslation(new(0, 0, -2))));
+//instances.Add(new(4, 4));
+instances.Add(new(5, 5, Matrix4x4.CreateTranslation(0,1,0)));
+models.AddElement(ModelKind.Sphere, new SphereModel(1));
+models.AddElement(ModelKind.Sphere, new SphereModel(.5f));
+models.AddElement(ModelKind.Sphere, new SphereModel(.5f));
+models.AddElement(ModelKind.Sphere, new SphereModel(2000));
+models.AddElement(ModelKind.Sphere, new SphereModel(.5f));
+models.AddElement(ModelKind.Cube, new CubeModel(new(.5f, .5f, .5f)));
 materials.AddElement(MaterialKind.Reflective, new ReflectiveMaterial(Vector3.One * .8f));
 materials.AddElement(MaterialKind.Diffuse, new DiffuseMaterial(Vector3.UnitX, XorShift32.Create(Random.Shared)));
 materials.AddElement(MaterialKind.Diffuse, new DiffuseMaterial(Vector3.One * .5f, XorShift32.Create(Random.Shared)));
 materials.AddElement(MaterialKind.Diffuse, new DiffuseMaterial(Vector3.UnitZ, XorShift32.Create(Random.Shared)));
+materials.AddElement(MaterialKind.Glass, new GlassMaterial(1.5f));
+materials.AddElement(MaterialKind.Glass, new NormalMaterial());
+materials.AddElement(MaterialKind.Glass, new MetalMaterial(new(0, 0, 1), .5f));
 
 Simulation.Create(Init, Render).Run();
 
@@ -102,7 +110,7 @@ void Render(ICanvas canvas)
     buffer!.ToArrayView().AsContiguous().CopyToCPU(texture.Pixels);
     texture.ApplyChanges();
     canvas.Translate(canvas.Width / 2f, canvas.Height / 2f);
-    canvas.DrawTexture(texture, 0, 0, width, height, Alignment.Center);
+    canvas.DrawTexture(texture, 0, 0, resolutionX * scale, resolutionY * scale, Alignment.Center);
 
     frames++;
 }
@@ -148,8 +156,7 @@ void HandleInput()
 
 void Layout()
 {
-    ImGui.DragFloat("Height", ref width);
-    ImGui.DragFloat("Width", ref height);
+    ImGui.SliderFloat("Scale", ref scale, .5f, 10.0f);
 
     if (
         ImGui.DragInt("Resolution X", ref resolutionX) ||
@@ -163,8 +170,6 @@ void Layout()
 
     if (locked)
     {
-        width = resolutionX;
-        height = resolutionY;
     }
     
     ImGui.Separator();

@@ -11,30 +11,32 @@ namespace Raytracer69;
 
 internal struct DiffuseMaterial : IMaterial<DiffuseMaterial>
 {
-    Vector3 color;
-    XorShift32 random;
+    // albedo
+    public Vector3 Color;
+    // expose rng so types like MetalMaterial can use it
+    public XorShift32 Random;
 
     public DiffuseMaterial(Vector3 color, XorShift32 random)
     {
-        this.color = color;
-        this.random = random;
+        this.Color = color;
+        this.Random = random;
     }
 
     public bool Scatter(Ray ray, Vector3 normal, float t, out Vector3 attenuation, out Vector3 direction)
     {
         unsafe 
         {
-            var seed = random.State ^ *(uint*)&normal.X ^ *(uint*)&normal.Y ^ *(uint*)&normal.Z + *(uint*)&t;
+            var seed = Random.State ^ *(uint*)&normal.X ^ *(uint*)&normal.Y ^ *(uint*)&normal.Z + *(uint*)&t;
 
             if (seed is 0)
             {
                 seed += 233;
             }
 
-            random = new(seed);
+            Random = new(seed);
         }
         direction = normal + RandomUnitVector();
-        attenuation = color;
+        attenuation = Color;
         return true;
     }
 
@@ -44,7 +46,7 @@ internal struct DiffuseMaterial : IMaterial<DiffuseMaterial>
 
         do
         {
-            result = new(random.NextFloat(), random.NextFloat(), random.NextFloat());
+            result = new(Random.NextFloat(), Random.NextFloat(), Random.NextFloat());
         }
         while (result.LengthSquared() > 1);
 

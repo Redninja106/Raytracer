@@ -1,19 +1,17 @@
 ﻿using System.Numerics;
 
-public struct Sphere : IModel<Sphere>
+public struct SphereModel : IModel<SphereModel>
 {
-    public Vector3 position;
     public float radius;
 
-    public Sphere(Vector3 position, float radius)
+    public SphereModel(float radius)
     {
-        this.position = position;
         this.radius = radius;
     }
 
     public bool Intersect(Ray ray, out Vector3 normal, out float t)
     {
-        var co = ray.origin - position;
+        var co = ray.origin;
         var a = Vector3.Dot(ray.direction, ray.direction);
         var halfB = Vector3.Dot(co, ray.direction);
         var c = Vector3.Dot(co, co) - radius * radius;
@@ -35,7 +33,7 @@ public struct Sphere : IModel<Sphere>
         {
             t = (-halfB + sqrtD) / a;
         }
-        normal = Vector3.Normalize(ray.At(t) - position);
+        normal = Vector3.Normalize(ray.At(t));
         return t < ray.tMax && t > ray.tMin;
     }
 }

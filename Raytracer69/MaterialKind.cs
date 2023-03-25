@@ -2,4 +2,7 @@
 {
     Reflective,
     Diffuse,
+    Glass,
+    Normal,
+    Metal,
 }
